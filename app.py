@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request
 from main import myanimelist_related_entries
-import os
 
 app = Flask(__name__)
 

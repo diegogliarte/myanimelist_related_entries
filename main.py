@@ -3,64 +3,76 @@ import operator
 from utils import *
 
 
-def main(anime, excluded_category=[], excluded_text=[], included_text=[], types=["anime", "manga"]):
-    types = [x for x in types if x]  # If there's only empty strings inside types, it appends "anime"
-    if len(types) == 0:
-        types.append("anime")
+def myanimelist_related_entries(anime, excluded_category=[], excluded_text=[], included_text=[], types=["anime", "manga"], sort="date"):
 
-    # The lists get proper format ("_" instead of " ", etc...)
-    excluded_text = parse_inc_exc(excluded_text)
-    included_text = parse_inc_exc(included_text)
+    try:
+        # If there's only empty strings inside types, it appends "anime"
+        types = [x for x in types if x]
 
-    # Gets the first anime
-    url = get_base_anime(anime, types[0])
+        if len(types) == 0:
+            types.append("anime")
 
-    first = datetime.now()
 
-    hrefs = []
-    visited = []
+        # The lists get proper format ("_" instead of " ", etc...)
+        excluded_text = parse_inc_exc(excluded_text)
+        included_text = parse_inc_exc(included_text)
 
-    # Gets first related animes without multi threading
-    get_relateds(url, hrefs, visited, excluded_category, excluded_text, included_text, types)
+        # Gets the first anime
+        category = types[0]
+        print(category)
+        url = get_base_anime(anime, category.lower())
 
-    # If the lenght is not equal, it means we have to continue iterating
-    # I think that because we do the thread.join(), this is useless, since it will be iterating
-    # at the "for href in hrefs" level, not here
-    while len(hrefs) != len(visited):
+
+        first = datetime.now()
+
+        hrefs = [url] # List of strings
+        visited = [] # List of Animes
+
+
+        # For each href, we create a thread that visits each thread. Once everything has been joint(), hrefs is filled
+        # with more href, meaning that we can iterate again through the lasts ones. If there's been an iteration without
+        # adding more href, it means that the cycle is closed, and there are no more related entries
         for href in hrefs:
             if href not in visited:
-                thrd = Threads(get_relateds, href, hrefs, visited, excluded_category, excluded_text, included_text,
+                thrd = Threads(get_relateds, hrefs, visited, excluded_category, excluded_text, included_text,
                                types)
                 thrd.start()
+
+                # Waits until all the href have been processed
                 thrd.join()
 
-    print("Checking dates and names that were not added...")
 
-    # In case there was some problem with settings the parametters, we check the dates and the names again
-    check_dates(visited)
-    check_names(visited)
+        print("\nChecking dates and names that were not added...")
 
-    sorted_visited = sorted(visited, key=operator.attrgetter('date'))
+        # In case there was some problem with settings the parameters, we check the dates and the names again
+        check_dates(visited)
+        check_names(visited)
 
-    for idx, visit in enumerate(sorted_visited):
-        print(f"{idx + 1} {visit.date} - {visit.name} ({visit.url})")
+        # Sorts anime
+        sorted_visited = sorted(visited, key=operator.attrgetter(sort))
 
-    total_time = datetime.now() - first
-    print(total_time, total_time.total_seconds() / len(visited))
+        result = ""
+        result_hrefs = ""
+        # Prints anime
+        for idx, visit in enumerate(sorted_visited):
+            result += f"{idx + 1}. {visit.date} - {visit.name}\n"
+            result_hrefs += f"{visit.url}\n"
 
+        # Total duration of the process
+        total_time = datetime.now() - first
+        print(total_time, total_time.total_seconds() / len(visited))
 
-url = "one piece"
-excluded_category = [""]
-excluded_text = [""]
-included_text = ["one piece"]
-types = [""]
+        return result, result_hrefs
 
-main(url, excluded_category, excluded_text, included_text, types)
-
-# anime_test = Anime("https://myanimelist.net/anime/23831/Mahou_Shoujo_Madoka★Magica_Movie_3__Hangyaku_no_Monogatari_-_Magica_Quartet_x_Nisioisin")
-# anime_test.name = "anime name"
-# anime_test.date = ""
+    except:
+        return "There was a problem", "There was a problem"
 #
-# print(anime_test.name, "date: ", anime_test.date)
-# check_dates([anime_test])
-# print(anime_test.name, "date: ", anime_test.date)
+# url = "steins gate"
+# excluded_category = [""]
+# excluded_text = []
+# included_text = []
+# types = []
+#
+#
+# myanimelist_related_entries(url, excluded_category, excluded_text, included_text, types)
+
