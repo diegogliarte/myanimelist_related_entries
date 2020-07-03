@@ -1,8 +1,6 @@
 Flask==1.1.2
 gunicorn
 beautifulsoup4
-<<<<<<< HEAD
 requests
-=======
-requests
->>>>>>> ca717e5907aaaf3a8d0cd110161d17fce3e2e319
+
+
