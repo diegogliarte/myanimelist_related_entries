@@ -146,32 +146,37 @@ def check_names(animes):
 
 
 def get_relateds(anime, hrefs, visited, excluded_category, excluded_text, included_text, types):
-    # Requests the page for the anime (this 3 lines are the most time expensive lines by far, can't optimize much more)
-    html = requests.get(anime).text
-    soup = BeautifulSoup(html, "html.parser")
-    content = soup.find("table", class_="anime_detail_related_anime")
+    try:
+        # Requests the page for the anime (this 3 lines are the most time expensive lines by far, can't optimize much more)
+        html = requests.get(anime).text
+        soup = BeautifulSoup(html, "html.parser")
+        content = soup.find("table", class_="anime_detail_related_anime")
 
-    # Since we've made sure that it's not a visited anime, we can append the anime without checking
-    visited.append(Anime(anime))
-    visited[-1].set_params(soup)  # Sets the parameters, since I could not do it in the __init__ method
-    print(anime + " has been added!")
+        # Since we've made sure that it's not a visited anime, we can append the anime without checking
+        visited.append(Anime(anime))
+        visited[-1].set_params(soup)  # Sets the parameters, since I could not do it in the __init__ method
+        #print(anime + " has been added!")
 
-    i = 0
-    for col in content.find_all('td'):
-        # Every 2 cols there's a relation that we can use to filter with the excluded_category var
-        if i % 2 == 0:
-            relation = current_relation(col, excluded_category)
-        i += 1
-        for element in col.find_all('a'):
-            if relation != "No valid category":
-                href = "https://myanimelist.net" + element['href']
-                # Appends hrefs that are:
-                # 1. Valid types (manga, anime or both)
-                # 2. Valid names: not in excluded names and in included names
-                # 3. Not in hrefs, meaning that we don't repeat
-                if is_valid_type(href, types) and is_valid_name(href, excluded_text,
-                                                                included_text) and href not in hrefs:
-                    hrefs.append(href)
+        i = 0
+        for col in content.find_all('td'):
+            # Every 2 cols there's a relation that we can use to filter with the excluded_category var
+            if i % 2 == 0:
+                relation = current_relation(col, excluded_category)
+            i += 1
+            for element in col.find_all('a'):
+                if relation != "No valid category":
+                    href = "https://myanimelist.net" + element['href']
+                    # Appends hrefs that are:
+                    # 1. Valid types (manga, anime or both)
+                    # 2. Valid names: not in excluded names and in included names
+                    # 3. Not in hrefs, meaning that we don't repeat
+                    if is_valid_type(href, types) and is_valid_name(href, excluded_text,
+                                                                    included_text) and href not in hrefs:
+                        print(f"Now checking: {anime} appended {href}")
+                        hrefs.append(href)
+    except:
+        hrefs.remove(anime)
+        visited.remove(anime)
 
 
 class Anime:

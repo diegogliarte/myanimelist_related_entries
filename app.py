@@ -19,10 +19,10 @@ def main():
         excluded_category = request.form.getlist('excluded_category')
         print("Excl category: ", excluded_category)
 
-        excluded_text = request.form['excluded_text'].split(",")
+        excluded_text = request.form['excluded_text'].strip().split(",")
         print("Excl text: ", excluded_text)
 
-        included_text = request.form['included_text'].split(",")
+        included_text = request.form['included_text'].strip().split(",")
         print("Incl text: ", included_text)
 
         result, result_hrefs= myanimelist_related_entries(url, excluded_category, excluded_text, included_text, types)
