@@ -26,14 +26,13 @@ def main():
         print("Incl text: ", included_text)
 
         result, result_hrefs= myanimelist_related_entries(url, excluded_category, excluded_text, included_text, types)
-        print(result)
 
         result = result.split("\n")
         result_hrefs = result_hrefs.split("\n")
 
         zipped_data = zip(result, result_hrefs)
 
-        return render_template('main.html', name='myanimelist', zipped_data=zipped_data)
+        return render_template('main.html', name='myanimelist', zipped_data=zipped_data, url=url)
 
 
     return render_template('main.html', name='myanimelist')

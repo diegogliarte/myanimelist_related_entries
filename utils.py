@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 from time import strptime, strftime
 import threading
+from datetime import datetime
 
 
 def current_relation(rel, excluded_category):
@@ -155,7 +156,7 @@ def get_relateds(anime, hrefs, visited, excluded_category, excluded_text, includ
         # Since we've made sure that it's not a visited anime, we can append the anime without checking
         visited.append(Anime(anime))
         visited[-1].set_params(soup)  # Sets the parameters, since I could not do it in the __init__ method
-        #print(anime + " has been added!")
+
 
         i = 0
         for col in content.find_all('td'):
@@ -172,8 +173,8 @@ def get_relateds(anime, hrefs, visited, excluded_category, excluded_text, includ
                     # 3. Not in hrefs, meaning that we don't repeat
                     if is_valid_type(href, types) and is_valid_name(href, excluded_text,
                                                                     included_text) and href not in hrefs:
-                        print(f"Now checking: {anime} appended {href}")
                         hrefs.append(href)
+
     except:
         hrefs.remove(anime)
         visited.remove(anime)
