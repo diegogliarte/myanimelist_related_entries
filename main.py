@@ -58,21 +58,11 @@ def myanimelist_related_entries(anime, excluded_category=[], excluded_text=[], i
             result += f"{idx + 1}. {visit.date} - {visit.name}\n"
             result_hrefs += f"{visit.url}\n"
 
-<<<<<<< HEAD
         # Total duration of the process
         total_time = datetime.now() - first
         print(total_time, total_time.total_seconds() / len(visited))
 
         return result, result_hrefs
-=======
-# url = "one piece"
-# excluded_category = [""]
-# excluded_text = [""]
-# included_text = ["one piece"]
-# types = [""]
-#
-# main(url, excluded_category, excluded_text, included_text, types)
->>>>>>> ca717e5907aaaf3a8d0cd110161d17fce3e2e319
 
     except:
         return "There was a problem", "There was a problem"
