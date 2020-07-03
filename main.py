@@ -49,13 +49,13 @@ def main(anime, excluded_category=[], excluded_text=[], included_text=[], types=
     print(total_time, total_time.total_seconds() / len(visited))
 
 
-url = "one piece"
-excluded_category = [""]
-excluded_text = [""]
-included_text = ["one piece"]
-types = [""]
-
-main(url, excluded_category, excluded_text, included_text, types)
+# url = "one piece"
+# excluded_category = [""]
+# excluded_text = [""]
+# included_text = ["one piece"]
+# types = [""]
+#
+# main(url, excluded_category, excluded_text, included_text, types)
 
 # anime_test = Anime("https://myanimelist.net/anime/23831/Mahou_Shoujo_Madoka★Magica_Movie_3__Hangyaku_no_Monogatari_-_Magica_Quartet_x_Nisioisin")
 # anime_test.name = "anime name"
