@@ -124,16 +124,7 @@
     <form method="POST">
         <div class="wrapper">
             <div class="container">
-                <div class="form-group, inside" data-toggle="tooltip" data-placement="top"
-                     title="
-Write the name of the anime you want to begin searching with
-or paste directly the url of the myanimelist entry.">
-                    <label for="exampleFormControlInput1" class="titles">
-                        Anime name or URL (from MAL)</label>
-                    <input name="url" style="border-radius: 10px 10px 0px 0px;" type="text" class="form-control"
-                           id="url" placeholder="Naruto" required value={{url}}>
-                    <button type="submit" id="submit" class="btn btn-primary">Submit</button>
-                </div>
+                <button type="submit" id="submit" class="btn btn-primary">Submit</button>
                 <div class="form-group, inside" style="position:relative" data-toggle="tooltip" data-placement="top"
                      title="
 You can search for animes, mangas or both.">
@@ -178,40 +169,16 @@ this box, it will only gather related entries WITHOUT the word 'shippuuden' in t
             </div>
 
             <div class="container">
-                <div class="form-group, inside" data-toggle="tooltip" data-placement="top"
-                     title="
-Every selected category WILL NOT be taken into account in the search.
-Use CTRL to select multiple categories.">
-                    <label for="exampleFormControlSelect2" class="titles">Exclude categories</label>
-                    <select name="excluded_category" multiple class="form-control" style="border-radius: 10px"
-                            id="exampleFormControlSelect2"
-                            size="11" style="height: 100%">
-                        <option selected>None</option>
-                        <option>Adaptation</option>
-                        <option>Alternative setting</option>
-                        <option>Prequel</option>
-                        <option>Sequel</option>
-                        <option>Other</option>
-                        <option>Alternative version</option>
-                        <option>Summary</option>
-                        <option>Side story</option>
-                        <option>Full story</option>
-                        <option>Character</option>
 
-                    </select></div>
             </div>
         </div>
     </form>
 
     {% if zipped_data %}
-
         <div class="result">
             {% for name, href in zipped_data %}
             <p><a href={{href}} style="color:#ececec">{{name}}</a></p>
             {% endfor %}
-            <br>
-            <p style="color:#ececec">Total episodes: {{ total_episodes }}</p>
-            <p style="color:#ececec">Total duration: {{ total_duration }}</p>
         </div>
     {% endif %}
 

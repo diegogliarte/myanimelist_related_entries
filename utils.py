@@ -3,7 +3,6 @@ import requests
 from time import strptime, strftime
 import threading
 
-
 def current_relation(rel, excluded_category):
     rel = str(rel)
 
@@ -104,14 +103,12 @@ def get_base_anime(url, category):
         element = soup.find("h2", id=category)
         return element.next_sibling.next_sibling.find("a")['href']
 
-        return "Could not find your anime"
 
-
-def get_name(soup):
+def scrape_name(soup):
     return soup.title.string.replace(" - MyAnimeList.net", "").strip()
 
 
-def get_date(soup):
+def scrape_date(soup):
     content = soup.find_all("div", style='width: 225px')
 
     for all_info in content:
@@ -123,13 +120,39 @@ def get_date(soup):
                 return parse_date(info.next_sibling.string.strip())
 
 
+def scrape_episodes(soup):
+    content = soup.find_all("div", style='width: 225px')
+
+    for all_info in content:
+        if all_info.text == "Episodes:" or all_info.text == "Chapters:":
+            return all_info.next_sibling.string.strip()
+
+        for info in all_info.find_all("span", class_="dark_text"):
+            if info.text == "Episodes:" or info.text == "Chapters:":
+                return info.next_sibling.string.strip()
+
+
+def scrape_score(soup):
+    content = soup.find_all("span", class_="score-label")
+    return content[0].text  # Content is an array with a single element, dunno why they did it like this
+
+
+def scrape_average_duration(soup):
+    content = soup.find_all("span", class_="dark_text")
+
+    for info in content:
+        if info.text == "Duration:":
+            return info.next_sibling.string.strip()
+
+
 def check_dates(animes):
     for anime in animes:
+
         if anime.date == "":
             try:
                 html = requests.get(anime.url).text
                 soup = BeautifulSoup(html, "html.parser")
-                anime.date = get_date(soup)
+                anime.date = scrape_date(soup)
             except:
                 anime.date = "Could not find the date"
 
@@ -140,45 +163,60 @@ def check_names(animes):
             try:
                 html = requests.get(anime.url).text
                 soup = BeautifulSoup(html, "html.parser")
-                anime.name = get_name(soup)
+                anime.name = scrape_name(soup)
             except:
                 anime.name = "Could not find the name"
 
 
+def check_episodes(animes):
+    for anime in animes:
+        if anime.episodes == "":
+            try:
+                html = requests.get(anime.url).text
+                soup = BeautifulSoup(html, "html.parser")
+                anime.episodes = scrape_episodes(soup)
+            except:
+                anime.episodes = "Could not find the episodes count"
+
+
+def check_average_duration(animes):
+    for anime in animes:
+        if anime.average_duration == "":
+            try:
+                html = requests.get(anime.url).text
+                soup = BeautifulSoup(html, "html.parser")
+                anime.average_duration = scrape_average_duration(soup)
+            except:
+                anime.average_duration = "Could not find the average duration per episode"
+
+
 def get_relateds(anime, hrefs, visited, excluded_category, excluded_text, included_text, types):
-    try:
-        # Requests the page for the anime (this 3 lines are the most time expensive lines by far, can't optimize much more)
-        html = requests.get(anime).text
-        soup = BeautifulSoup(html, "html.parser")
-        content = soup.find("table", class_="anime_detail_related_anime")
+    # Requests the page for the anime (this 3 lines are the most time expensive lines by far, can't optimize much more)
+    html = requests.get(anime).text
+    soup = BeautifulSoup(html, "html.parser")
+    content = soup.find("table", class_="anime_detail_related_anime")
 
-        # Since we've made sure that it's not a visited anime, we can append the anime without checking
-        visited.append(Anime(anime))
-        visited[-1].set_params(soup)  # Sets the parameters, since I could not do it in the __init__ method
+    # Since we've made sure that it's not a visited anime, we can append the anime without checking
+    visited.append(Anime(anime))
+    print(anime, "was added")
+    visited[-1].set_params(soup)  # Sets the parameters, since I could not do it in the __init__ method
 
-        print(anime, "added!")
-
-
-        i = 0
-        for col in content.find_all('td'):
-            # Every 2 cols there's a relation that we can use to filter with the excluded_category var
-            if i % 2 == 0:
-                relation = current_relation(col, excluded_category)
-            i += 1
-            for element in col.find_all('a'):
-                if relation != "No valid category":
-                    href = "https://myanimelist.net" + element['href']
-                    # Appends hrefs that are:
-                    # 1. Valid types (manga, anime or both)
-                    # 2. Valid names: not in excluded names and in included names
-                    # 3. Not in hrefs, meaning that we don't repeat
-                    if is_valid_type(href, types) and is_valid_name(href, excluded_text,
-                                                                    included_text) and href not in hrefs:
-                        hrefs.append(href)
-
-    except:
-        hrefs.remove(anime)
-        visited.remove(anime)
+    i = 0
+    for col in content.find_all('td'):
+        # Every 2 cols there's a relation that we can use to filter with the excluded_category var
+        if i % 2 == 0:
+            relation = current_relation(col, excluded_category)
+        i += 1
+        for element in col.find_all('a'):
+            if relation != "No valid category":
+                href = "https://myanimelist.net" + element['href']
+                # Appends hrefs that are:
+                # 1. Valid types (manga, anime or both)
+                # 2. Valid names: not in excluded names and in included names
+                # 3. Not in hrefs, meaning that we don't repeat
+                if is_valid_type(href, types) and is_valid_name(href, excluded_text,
+                                                                included_text) and href not in hrefs:
+                    hrefs.append(href)
 
 
 class Anime:
@@ -188,6 +226,9 @@ class Anime:
         self.list = []
         self.name = ""
         self.date = ""
+        self.score = ""
+        self.episodes = ""
+        self.average_duration = ""
 
     def __str__(self):
         return self.url
@@ -196,8 +237,12 @@ class Anime:
         return self.url == other
 
     def set_params(self, soup):
-        self.name = get_name(soup)
-        self.date = get_date(soup)
+        self.name = scrape_name(soup)
+        self.date = scrape_date(soup)
+        self.score = scrape_score(soup)
+        self.episodes = scrape_episodes(soup)
+        self.average_duration = scrape_average_duration(soup)
+
 
 
 class Threads:

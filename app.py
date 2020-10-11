@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from main import myanimelist_related_entries
+from main import *
 
 app = Flask(__name__)
 
@@ -25,17 +25,16 @@ def main():
         included_text = request.form['included_text'].strip().split(",")
         print("Incl text: ", included_text)
 
-        result, result_hrefs= myanimelist_related_entries(url, excluded_category, excluded_text, included_text, types)
+        result, result_hrefs, total_duration, total_episodes = myanimelist_related_entries(url, excluded_category, excluded_text, included_text, types)
 
         result = result.split("\n")
-        result_hrefs = result_hrefs.split("\n")
+        result_hrefs_print = result_hrefs.split("\n")
 
-        zipped_data = zip(result, result_hrefs)
-
-        return render_template('main.html', name='myanimelist', zipped_data=zipped_data, url=url)
-
-
-    return render_template('main.html', name='myanimelist')
+        zipped_data = zip(result, result_hrefs_print)
+        print("Success!")
+        return render_template('main.html', name='myanimelist', zipped_data=zipped_data, url=url, total_duration=total_duration, total_episodes=total_episodes)
+    else:
+        return render_template('main.html', name='myanimelist')
 
 
 if __name__ == "__main__":
